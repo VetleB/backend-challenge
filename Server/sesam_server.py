@@ -18,9 +18,6 @@ class Datasets(Resource):
     def get(self):
         return 1
 
-    def post(self):
-        return 1
-
 
 class DatasetIds(Resource):
     def get(self, id):
@@ -28,6 +25,9 @@ class DatasetIds(Resource):
         with open('datasets/{}'.format(id), 'r') as f:
             data = json.load(f)
             return data, 200
+
+    def post(self):
+        return 1
 
     def delete(self, id):
         check_id_exists(id)
