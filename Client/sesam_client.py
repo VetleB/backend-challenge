@@ -30,14 +30,19 @@ def main(ctx, ip):
 def info(ctx):
     ip = ctx.obj['ip']
     r = requests.get('http://{}/datasets'.format(ip))
-    click.echo(r.status_code)
-    click.echo(r.text)
+    data = r.json()['file_info']
+    for ft in data:
+        click.echo('{} - {} MB'.format(ft[0], '{:.1f}'.format(ft[1]/1000)))
 
 
 @main.command()
+@click.option('--source', '-s',
+              type=click.Path(),
+              help='Path to source file')
 @click.pass_context
 def create(ctx):
     ip = ctx.obj['ip']
+    r = requests.post('http://{}/datasets'.format(ip))
     click.echo("")
 
 

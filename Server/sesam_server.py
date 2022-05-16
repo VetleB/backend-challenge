@@ -1,4 +1,4 @@
-from flask import Flask, send_file
+from flask import Flask, send_file, jsonify
 from flask_restful import Resource, Api, abort
 import os
 import json
@@ -16,7 +16,11 @@ def check_id_exists(id):
 
 class Datasets(Resource):
     def get(self):
-        return 1
+        dataset_dir = 'datasets'
+        files = filter(lambda x: os.path.isfile(os.path.join(dataset_dir, x)), os.listdir(dataset_dir))
+        files_sizes = [(fn, os.stat(os.path.join(dataset_dir, fn)).st_size) for fn in files]
+        jf = {'file_info': files_sizes}
+        return jf
 
 
 class DatasetIds(Resource):
