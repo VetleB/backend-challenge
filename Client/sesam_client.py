@@ -33,47 +33,50 @@ def info(ctx):
     r = requests.get('http://{}/datasets'.format(ip))
     sc = r.status_code
 
-    click.echo(sc)
     if sc == 200:
         data = r.json()['file_info']
         for ft in data:
             click.echo('{} - {} MB'.format(ft[0], '{:.1f}'.format(ft[1]/1000)))
     else:
-        click.echo(r.text)
-
-
-@main.command()
-@click.option('--source', '-s',
-              type=click.Path(),
-              help='Path to source file')
-@click.pass_context
-def create(ctx, source):
-    ip = ctx.obj['ip']
-    with open(source, 'r') as f:
-        payload = json.load(f)
-        r = requests.post('http://{}/datasets'.format(ip), json=payload)
-        sc = r.status_code
-
         click.echo(sc)
         click.echo(r.text)
 
 
 @main.command()
+@click.argument('source', type=click.Path())
+@click.pass_context
+def create(ctx, source):
+    ip = ctx.obj['ip']
+    try:
+        with open(source, 'r') as f:
+            payload = json.load(f)
+            r = requests.post('http://{}/datasets'.format(ip), json=payload)
+            sc = r.status_code
+
+            if sc != 201:
+                click.echo(sc)
+            click.echo(r.text)
+    except FileNotFoundError:
+        click.echo('No file found at {}'.format(source))
+
+
+@main.command()
 @click.argument('id')
-@click.option('--dest', '-d',
-              type=click.Path(),
-              help='Path to file destination')
+@click.argument('dest', type=click.Path())
 @click.pass_context
 def get(ctx, id, dest):
     ip = ctx.obj['ip']
     r = requests.get('http://{}/datasets/{}'.format(ip, id))
     sc = r.status_code
 
-    click.echo(sc)
-    if sc == 200 and dest:
-        with open(dest, 'w') as f:
-            f.write(r.text)
+    if sc == 200:
+        if dest:
+            with open(dest, 'w') as f:
+                f.write(r.text)
+        else:
+            click.echo(r.text)
     else:
+        click.echo(sc)
         click.echo(r.text)
 
 
@@ -85,8 +88,8 @@ def delete(ctx, id):
     r = requests.delete('http://{}/datasets/{}'.format(ip, id))
     sc = r.status_code
 
-    click.echo(r.status_code)
     if sc != 204:
+        click.echo(r.status_code)
         click.echo(r.text)
 
 
@@ -99,11 +102,11 @@ def excel(ctx, id, dest):
     r = requests.get('http://{}/datasets/{}/excel'.format(ip, id))
     sc = r.status_code
 
-    click.echo(sc)
     if sc == 200:
         with open(dest, 'wb') as f:
             f.write(r.content)
     else:
+        click.echo(sc)
         print(r.text)
 
 
