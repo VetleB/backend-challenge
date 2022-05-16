@@ -31,9 +31,15 @@ def main(ctx, ip):
 def info(ctx):
     ip = ctx.obj['ip']
     r = requests.get('http://{}/datasets'.format(ip))
-    data = r.json()['file_info']
-    for ft in data:
-        click.echo('{} - {} MB'.format(ft[0], '{:.1f}'.format(ft[1]/1000)))
+    sc = r.status_code
+
+    click.echo(sc)
+    if sc == 200:
+        data = r.json()['file_info']
+        for ft in data:
+            click.echo('{} - {} MB'.format(ft[0], '{:.1f}'.format(ft[1]/1000)))
+    else:
+        click.echo(r.text)
 
 
 @main.command()
@@ -46,9 +52,10 @@ def create(ctx, source):
     with open(source, 'r') as f:
         payload = json.load(f)
         r = requests.post('http://{}/datasets'.format(ip), json=payload)
-        click.echo(r.status_code)
-        if r.text:
-            click.echo(r.text)
+        sc = r.status_code
+
+        click.echo(sc)
+        click.echo(r.text)
 
 
 @main.command()
@@ -62,15 +69,12 @@ def get(ctx, id, dest):
     r = requests.get('http://{}/datasets/{}'.format(ip, id))
     sc = r.status_code
 
-    if dest:
+    click.echo(sc)
+    if sc == 200 and dest:
         with open(dest, 'w') as f:
             f.write(r.text)
-        click.echo(sc)
     else:
-        if r.status_code == 200:
-            click.echo(sc)
-        else:
-            click.echo(sc)
+        click.echo(r.text)
 
 
 @main.command()
@@ -79,15 +83,28 @@ def get(ctx, id, dest):
 def delete(ctx, id):
     ip = ctx.obj['ip']
     r = requests.delete('http://{}/datasets/{}'.format(ip, id))
+    sc = r.status_code
+
     click.echo(r.status_code)
+    if sc != 204:
+        click.echo(r.text)
 
 
 @main.command()
 @click.argument('id')
+@click.argument('dest', type=click.Path())
 @click.pass_context
-def excel(ctx, id):
+def excel(ctx, id, dest):
     ip = ctx.obj['ip']
-    click.echo("")
+    r = requests.get('http://{}/datasets/{}/excel'.format(ip, id))
+    sc = r.status_code
+
+    click.echo(sc)
+    if sc == 200:
+        with open(dest, 'wb') as f:
+            f.write(r.content)
+    else:
+        print(r.text)
 
 
 if __name__ == '__main__':

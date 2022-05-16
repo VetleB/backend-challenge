@@ -47,7 +47,7 @@ class DatasetIds(Resource):
     def delete(self, id):
         check_id_exists(id)
         os.remove("datasets/{}".format(id))
-        return '', 204
+        return 204
 
 
 class Excel(Resource):
