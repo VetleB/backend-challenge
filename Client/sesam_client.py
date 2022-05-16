@@ -1,6 +1,7 @@
 import click
 import re
 import requests
+import json
 
 
 class IpAddress(click.ParamType):
@@ -40,10 +41,14 @@ def info(ctx):
               type=click.Path(),
               help='Path to source file')
 @click.pass_context
-def create(ctx):
+def create(ctx, source):
     ip = ctx.obj['ip']
-    r = requests.post('http://{}/datasets'.format(ip))
-    click.echo("")
+    with open(source, 'r') as f:
+        payload = json.load(f)
+        r = requests.post('http://{}/datasets'.format(ip), json=payload)
+        click.echo(r.status_code)
+        if r.text:
+            click.echo(r.text)
 
 
 @main.command()

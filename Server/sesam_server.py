@@ -1,6 +1,8 @@
-from flask import Flask, send_file
+import random
+
+from flask import Flask, send_file, request
 from flask_restful import Resource, Api, abort
-import os
+import os, random
 import json
 from tablib import Dataset
 
@@ -14,6 +16,13 @@ def check_id_exists(id):
         abort(404, message="Id {} does not exist".format(id))
 
 
+def create_new_entry(data):
+    new_id = 'sample_data_{}.json'.format(random.randint(10000, 99999))
+    with open('datasets/{}'.format(new_id), 'w') as f:
+        json.dump(data, f)
+    return new_id
+
+
 class Datasets(Resource):
     def get(self):
         dataset_dir = 'datasets'
@@ -22,6 +31,11 @@ class Datasets(Resource):
         jf = {'file_info': files_sizes}
         return jf
 
+    def post(self):
+        new_data = request.json[0]
+        new_id = create_new_entry(new_data)
+        return new_id, 201
+
 
 class DatasetIds(Resource):
     def get(self, id):
@@ -29,9 +43,6 @@ class DatasetIds(Resource):
         with open('datasets/{}'.format(id), 'r') as f:
             data = json.load(f)
             return data, 200
-
-    def post(self):
-        return 1
 
     def delete(self, id):
         check_id_exists(id)
