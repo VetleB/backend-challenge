@@ -1,8 +1,9 @@
 import click
 import re
+import requests
 
 
-class IpAdress(click.ParamType):
+class IpAddress(click.ParamType):
     name = 'ip'
 
     def convert(self, value, param, ctx):
@@ -15,7 +16,9 @@ class IpAdress(click.ParamType):
 
 
 @click.group()
-@click.argument('ip', type=IpAdress())
+@click.argument('ip',
+                type=IpAddress(),
+                help='Ip address and port for querying')
 @click.pass_context
 def main(ctx, ip):
     ctx.obj = {
@@ -27,7 +30,9 @@ def main(ctx, ip):
 @click.pass_context
 def info(ctx):
     ip = ctx.obj['ip']
-    click.echo(ip)
+    r = requests.get('http://{}/datasets'.format(ip))
+    click.echo(r.status_code)
+    click.echo(r.text)
 
 
 @main.command()
@@ -39,10 +44,19 @@ def create(ctx):
 
 @main.command()
 @click.argument('id')
+@click.option('--dest', '-d',
+              type=click.Path(),
+              help='Path to file destination')
 @click.pass_context
-def get(ctx, id):
+def get(ctx, id, dest):
     ip = ctx.obj['ip']
-    click.echo("")
+    r = requests.get('http://{}/datasets/{}'.format(ip, id))
+
+    if dest:
+        with open(dest, 'w') as f:
+            f.write(r.text)
+    else:
+        click.echo(r.text)
 
 
 @main.command()
