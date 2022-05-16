@@ -8,6 +8,7 @@ class IpAddress(click.ParamType):
     name = 'ip'
 
     def convert(self, value, param, ctx):
+        # Regex that matches on IPv4 addresses with port number
         valid = re.match(r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]{1,5}$', value)
 
         if not valid:
@@ -17,8 +18,7 @@ class IpAddress(click.ParamType):
 
 
 @click.group()
-@click.argument('ip',
-                type=IpAddress())
+@click.argument('ip', type=IpAddress())
 @click.pass_context
 def main(ctx, ip):
     ctx.obj = {
@@ -29,6 +29,12 @@ def main(ctx, ip):
 @main.command()
 @click.pass_context
 def info(ctx):
+    """
+    list the ids of the uploaded datasets and their corresponding file sizes
+
+    :param ctx:
+    :return:
+    """
     ip = ctx.obj['ip']
     r = requests.get('http://{}/datasets'.format(ip))
     sc = r.status_code
@@ -46,6 +52,13 @@ def info(ctx):
 @click.argument('source', type=click.Path())
 @click.pass_context
 def create(ctx, source):
+    """
+    Creates a new dataset entry. Takes a JSON file as input, and stores it in the ./dataset folder.
+
+    :param ctx:
+    :param source: Path to the file that is to uploaded
+    :return: The name of the created dataset entry
+    """
     ip = ctx.obj['ip']
     try:
         with open(source, 'r') as f:
@@ -65,16 +78,21 @@ def create(ctx, source):
 @click.argument('dest', type=click.Path())
 @click.pass_context
 def get(ctx, id, dest):
+    """
+    Return the dataset entry that matches the id
+
+    :param ctx:
+    :param id: id of dataset to be fetched
+    :param dest: Path to location where the fetched file is saved
+    :return:
+    """
     ip = ctx.obj['ip']
     r = requests.get('http://{}/datasets/{}'.format(ip, id))
     sc = r.status_code
 
     if sc == 200:
-        if dest:
-            with open(dest, 'w') as f:
-                f.write(r.text)
-        else:
-            click.echo(r.text)
+        with open(dest, 'w') as f:
+            f.write(r.text)
     else:
         click.echo(sc)
         click.echo(r.text)
@@ -84,6 +102,13 @@ def get(ctx, id, dest):
 @click.argument('id')
 @click.pass_context
 def delete(ctx, id):
+    """
+    Delete the dataset entry that matches the id
+
+    :param ctx:
+    :param id: id of dataset to be deleted
+    :return:
+    """
     ip = ctx.obj['ip']
     r = requests.delete('http://{}/datasets/{}'.format(ip, id))
     sc = r.status_code
@@ -98,6 +123,14 @@ def delete(ctx, id):
 @click.argument('dest', type=click.Path())
 @click.pass_context
 def excel(ctx, id, dest):
+    """
+    Return the dataset entry that matches the id as a .xls file
+
+    :param ctx:
+    :param id: id of dataset to be fetched
+    :param dest: Path to location where the fetched file is saved
+    :return:
+    """
     ip = ctx.obj['ip']
     r = requests.get('http://{}/datasets/{}/excel'.format(ip, id))
     sc = r.status_code
