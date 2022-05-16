@@ -1,4 +1,4 @@
-from flask import Flask, send_file, jsonify
+from flask import Flask, send_file
 from flask_restful import Resource, Api, abort
 import os
 import json

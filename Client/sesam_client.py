@@ -7,10 +7,10 @@ class IpAddress(click.ParamType):
     name = 'ip'
 
     def convert(self, value, param, ctx):
-        valid = re.match(r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$', value)
+        valid = re.match(r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]{1,5}$', value)
 
         if not valid:
-            self.fail(f'{value} is not an IPv4 address + port number', param, ctx)
+            self.fail(f'{value} is not a valid IPv4 address + port number', param, ctx)
 
         return value
 
