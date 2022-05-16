@@ -17,8 +17,7 @@ class IpAddress(click.ParamType):
 
 @click.group()
 @click.argument('ip',
-                type=IpAddress(),
-                help='Ip address and port for querying')
+                type=IpAddress())
 @click.pass_context
 def main(ctx, ip):
     ctx.obj = {
@@ -51,12 +50,17 @@ def create(ctx):
 def get(ctx, id, dest):
     ip = ctx.obj['ip']
     r = requests.get('http://{}/datasets/{}'.format(ip, id))
+    sc = r.status_code
 
     if dest:
         with open(dest, 'w') as f:
             f.write(r.text)
+        click.echo(sc)
     else:
-        click.echo(r.text)
+        if r.status_code == 200:
+            click.echo(sc)
+        else:
+            click.echo(sc)
 
 
 @main.command()
@@ -64,7 +68,8 @@ def get(ctx, id, dest):
 @click.pass_context
 def delete(ctx, id):
     ip = ctx.obj['ip']
-    click.echo("")
+    r = requests.delete('http://{}/datasets/{}'.format(ip, id))
+    click.echo(r.status_code)
 
 
 @main.command()
