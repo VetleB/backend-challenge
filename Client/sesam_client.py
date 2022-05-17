@@ -1,7 +1,8 @@
-import click
-import re
-import requests
 import json
+import re
+
+import click
+import requests
 
 
 class IpAddress(click.ParamType):

@@ -1,4 +1,6 @@
-import os, random, json, random
+import os
+import json
+import random
 import string
 
 from flask import Flask, send_file, request
