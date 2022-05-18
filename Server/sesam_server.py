@@ -113,5 +113,5 @@ class Excel(Resource):
 
 
 api.add_resource(Datasets, '/datasets')
-api.add_resource(DatasetIds, '/datasets/<id>')
-api.add_resource(Excel, '/datasets/<id>/excel')
+api.add_resource(DatasetIds, '/datasets/<jid>')
+api.add_resource(Excel, '/datasets/<jid>/excel')
